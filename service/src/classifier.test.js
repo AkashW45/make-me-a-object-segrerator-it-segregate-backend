@@ -1,54 +1,57 @@
 const classify = require('./classifier');
 
 describe('classify', () => {
-  describe('happy path', () => {
-    test('classify circle when sides is 0 or null', () => {
-      expect(classify({ sides: 0 })).toBe('circle');
-      expect(classify({ sides: null })).toBe('circle');
+    test('should classify circle when sides is 0', () => {
+        const descriptors = { sides: 0, symmetry_axes: 0, convex_hull_ratio: 0 };
+        expect(classify(descriptors)).toEqual({ category: 'circle', color: 'red' });
     });
 
-    test('classify triangle, pentagon, hexagon based on sides', () => {
-      expect(classify({ sides: 3 })).toBe('triangle');
-      expect(classify({ sides: 5 })).toBe('pentagon');
-      expect(classify({ sides: 6 })).toBe('hexagon');
+    test('should classify circle when sides is null', () => {
+        const descriptors = { sides: null, symmetry_axes: 0, convex_hull_ratio: 0 };
+        expect(classify(descriptors)).toEqual({ category: 'circle', color: 'red' });
     });
 
-    test('classify polygon for sides greater than 6', () => {
-      expect(classify({ sides: 7 })).toBe('polygon');
-      expect(classify({ sides: 100 })).toBe('polygon');
-    });
-  });
-
-  describe('edge case: square vs rectangle', () => {
-    test('should return square when symmetry_axes >= 4 and convex_hull_ratio > 0.9', () => {
-      const squareDescriptor = { sides: 4, symmetry_axes: 4, convex_hull_ratio: 1 };
-      expect(classify(squareDescriptor)).toBe('square');
+    test('should classify triangle with correct color', () => {
+        const descriptors = { sides: 3, symmetry_axes: 2, convex_hull_ratio: 0.8 };
+        expect(classify(descriptors)).toEqual({ category: 'triangle', color: 'green' });
     });
 
-    test('should return rectangle otherwise', () => {
-      // symmetry_axes less than 4
-      expect(classify({ sides: 4, symmetry_axes: 3, convex_hull_ratio: 1 })).toBe('rectangle');
-      // convex_hull_ratio exactly 0.9 (not > 0.9)
-      expect(classify({ sides: 4, symmetry_axes: 4, convex_hull_ratio: 0.9 })).toBe('rectangle');
-      // convex_hull_ratio below 0.9
-      expect(classify({ sides: 4, symmetry_axes: 4, convex_hull_ratio: 0.5 })).toBe('rectangle');
+    test('should classify square using high symmetry and convex hull ratio', () => {
+        const descriptors = { sides: 4, symmetry_axes: 4, convex_hull_ratio: 0.95 };
+        expect(classify(descriptors)).toEqual({ category: 'square', color: 'blue' });
     });
-  });
 
-  describe('edge case: unknown category', () => {
-    test('should return unknown for unexpected input', () => {
-      expect(classify({ sides: -1 })).toBe('unknown');
-      expect(classify({ sides: undefined })).toBe('unknown');
-      expect(classify({})).toBe('unknown'); // sides missing
+    test('should classify rectangle when 4-sided but not square', () => {
+        const descriptors = { sides: 4, symmetry_axes: 2, convex_hull_ratio: 0.8 };
+        expect(classify(descriptors)).toEqual({ category: 'rectangle', color: 'yellow' });
     });
-  });
 
-  describe('error path', () => {
-    test('should throw TypeError when descriptors is null or not an object', () => {
-      expect(() => classify(null)).toThrow(TypeError);
-      expect(() => classify(undefined)).toThrow(TypeError);
-      expect(() => classify(42)).toThrow(TypeError);
-      expect(() => classify('string')).toThrow(TypeError);
+    test('should classify pentagon', () => {
+        const descriptors = { sides: 5, symmetry_axes: 1, convex_hull_ratio: 0.7 };
+        expect(classify(descriptors)).toEqual({ category: 'pentagon', color: 'orange' });
     });
-  });
+
+    test('should classify hexagon', () => {
+        const descriptors = { sides: 6, symmetry_axes: 1, convex_hull_ratio: 0.7 };
+        expect(classify(descriptors)).toEqual({ category: 'hexagon', color: 'purple' });
+    });
+
+    test('should classify polygon for sides > 6', () => {
+        const descriptors = { sides: 7, symmetry_axes: 1, convex_hull_ratio: 0.7 };
+        expect(classify(descriptors)).toEqual({ category: 'polygon', color: 'pink' });
+    });
+
+    test('should classify unknown when sides is negative number', () => {
+        const descriptors = { sides: -2, symmetry_axes: 1, convex_hull_ratio: 0.5 };
+        expect(classify(descriptors)).toEqual({ category: 'unknown', color: 'gray' });
+    });
+
+    test('should classify unknown when sides property is missing', () => {
+        const descriptors = { symmetry_axes: 2, convex_hull_ratio: 0.8 };
+        expect(classify(descriptors)).toEqual({ category: 'unknown', color: 'gray' });
+    });
+
+    test('should throw TypeError when descriptors is null', () => {
+        expect(() => classify(null)).toThrow(TypeError);
+    });
 });

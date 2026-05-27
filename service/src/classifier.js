@@ -1,32 +1,50 @@
 /**
  * Rule-based classifier based on ADR-002.
+ * Extended to assign a color per ADR-001 (color segregation).
  * @param {Object} descriptors - { sides, symmetry_axes, convex_hull_ratio }
- * @returns {string} category name
+ * @returns {Object} { category: string, color: string }
  */
 function classify(descriptors) {
     const { sides, symmetry_axes, convex_hull_ratio } = descriptors;
 
+    let category;
+
     // Basic rules (extend as needed)
     if (sides === 0 || sides === null) {
-        return 'circle';
+        category = 'circle';
     } else if (sides === 3) {
-        return 'triangle';
+        category = 'triangle';
     } else if (sides === 4) {
         // Differentiate square vs rectangle using symmetry and convex hull ratio
         if (symmetry_axes >= 4 && convex_hull_ratio > 0.9) {
-            return 'square';
+            category = 'square';
         } else {
-            return 'rectangle';
+            category = 'rectangle';
         }
     } else if (sides === 5) {
-        return 'pentagon';
+        category = 'pentagon';
     } else if (sides === 6) {
-        return 'hexagon';
+        category = 'hexagon';
     } else if (sides > 6) {
-        return 'polygon';
+        category = 'polygon';
     } else {
-        return 'unknown';
+        category = 'unknown';
     }
+
+    // Color mapping based on category (configurable rules per ADR-001)
+    const colorMap = {
+        circle: 'red',
+        triangle: 'green',
+        square: 'blue',
+        rectangle: 'yellow',
+        pentagon: 'orange',
+        hexagon: 'purple',
+        polygon: 'pink',
+        unknown: 'gray'
+    };
+    const color = colorMap[category] || 'gray';
+
+    return { category, color };
 }
 
 module.exports = classify;

@@ -54,7 +54,7 @@ describe('Shape classification form', () => {
   });
 
   test('happy path: displays classification on successful fetch', async () => {
-    const mockResponse = { category: 'Circle', extra: true };
+    const mockResponse = { category: 'Circle', extra: true, color: 'red' };
     global.fetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
